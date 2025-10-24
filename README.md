@@ -6,3 +6,4 @@ Laravel part of admin-panel.
 - Generate CRUD
 
 Install
+***
