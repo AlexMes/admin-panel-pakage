@@ -1,0 +1,15 @@
+{
+    "name": "alexmes/admin-panel-pakage",
+    "description": "description",
+    "minimum-stability": "stable",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Alex",
+            "email": "mes_s@ukr.net"
+        }
+    ],
+    "require": {
+        "php": "^8.2"
+    }
+}
