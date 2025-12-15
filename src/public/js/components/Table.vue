@@ -16,16 +16,29 @@ import TabList from 'primevue/tablist';
 import Tab from 'primevue/tab';
 import TabPanels from 'primevue/tabpanels';
 import TabPanel from 'primevue/tabpanel';
+import Checkbox from 'primevue/checkbox';
+
+const checked = ref(true);
+const dnChecked = ref(false);
 
 import { ref } from 'vue';
 
 </script>
 
 <template>
-    <div class="card bg-white p-3 p-6 m-6">
-        <h2 v-if="$route.params.id">Edit Table</h2>
-        <h2 v-else>New Table</h2>
-        <label>Input base table information.</label>
+    <div class="row card bg-white p-3 p-6 m-6">
+        <div class="col-11">
+        <div class="row">
+            <div class="col-11">
+                <h2 v-if="$route.params.id">Edit Table</h2>
+                <h2 v-else>New Table</h2>
+                <label>Input base table information.</label>
+            </div>
+            <div class="col-1 ">
+                <Button @click="codeGen()" style="margin-left: 5px;"><i class="pi pi-cog px-1"></i>GENERATE</Button>
+            </div>
+        </div>
+        </div>
     </div>
 
     <Tabs v-model:value="activePanel" class="mt-4">
@@ -38,6 +51,12 @@ import { ref } from 'vue';
                 <form @submit.prevent="saveTable">
                     <div class="card mt-4">
                         <div class="bg-white flex justify-center">
+                            <div v-if="!$route.params.id" class="row p-4">
+                                <div class="col-md-2"><Checkbox v-model="checked" checked binary inputId="id_increment" /><label for="id_increment" class="px-2"> ID </label></div>
+                                <div class="col-md-2"><Checkbox v-model="dnChecked" binary inputId="soft_del" /><label for="soft_del" class="px-2"> Soft delete </label></div>
+                                <div class="col-md-2"><Checkbox v-model="checked" binary inputId="timestamps" /><label for="timestamps" class="px-2"> Timestamps </label></div>
+                                <div class="col-md-6"></div>
+                            </div>
                             <div class="flex p-4">
                                 <InputText id="name" v-model="name" aria-describedby="name-help" placeholder="Table Name" class="w-75"/>
                                 <Message v-if="errors.name" severity="error" variant="simple" size="small">{{errors.name[0]}}</Message>
@@ -61,7 +80,7 @@ import { ref } from 'vue';
                 </form>
             </TabPanel>
             <TabPanel value="Fields">
-                <Field-list />
+                <Column-list />
             </TabPanel>
 
         </TabPanels>
@@ -88,7 +107,7 @@ export default {
             toast: useToast(),
 
             activePanel: ref('Fields'), //id open AccordionPanel
-
+            local_hostname: window.location.protocol+'//'+window.location.hostname,
         }
     },
     mounted() {
@@ -103,7 +122,7 @@ export default {
     methods:{
         getTable(){
             if(this.$route.params.id){
-                axios.get('/api/table/' + this.$route.params.id)
+                axios.get('/api/dbd/v1/table/' + this.$route.params.id)
                     .then(response => {
                         this.name = response.data.table.name
                         this.description = response.data.table.description
@@ -125,10 +144,10 @@ export default {
             let url;
             if(this.$route.params.id) {//Редактировать проэкт
                 method = 'put'
-                url = '/api/table/'+this.$route.params.id
+                url = '/api/dbd/v1/table/'+this.$route.params.id
             }else{//Новый проэкт
                 method = 'post'
-                url = '/api/table/'+this.$route.params.project_id
+                url = '/api/dbd/v1/table/'+this.$route.params.project_id
             }
             axios({
                 method: method,
@@ -163,7 +182,7 @@ export default {
                     severity: 'danger'
                 },
                 accept: () => {
-                    axios.delete('/api/table/' + this.$route.params.id)
+                    axios.delete('/api/dbd/v1/table/' + this.$route.params.id)
                         .then(response => {
                             this.toast.add({ severity: 'info', summary: 'Confirmed', detail: 'Table deleted', life: 3000 });
                             this.$store.commit('updateMenu')
@@ -177,6 +196,16 @@ export default {
                 }
             });
         },
+        codeGen(){
+            axios.get(this.local_hostname+'/codegen/')
+                .then(response => {
+                    console.log("CodeGen OK!!!!!!!!");
+                })
+                .catch(error => {
+                    console.log("CodeGen Error!!!!");
+                })
+
+        }
     }
 
 }

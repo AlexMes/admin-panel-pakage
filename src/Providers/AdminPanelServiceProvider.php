@@ -24,5 +24,8 @@ class AdminPanelServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../public' => public_path('vendor/adminpanel'),
         ], 'public');
+        $this->publishes([
+            __DIR__.'/../config/adminpanel.php' => config_path('adminpanel.php')
+        ], 'courier-config');
     }
 }

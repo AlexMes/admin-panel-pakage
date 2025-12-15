@@ -25,8 +25,8 @@ const routes = [
                 component: () => import('./components/Table.vue'),
                 name: 'table.create'
             },
-            {path: 'create/field/:table_id', component: () => import('./components/Field.vue'), name: 'field.create'},
-            {path: 'field/:id', component: () => import('./components/Field.vue'), name: 'field'},
+            {path: 'create/field/:table_id', component: () => import('./components/Column.vue'), name: 'field.create'},
+            {path: 'field/:id', component: () => import('./components/Column.vue'), name: 'field'},
 
             {
                 path: 'components',

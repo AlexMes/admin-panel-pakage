@@ -16,7 +16,7 @@ import Tabs from "primevue/tabs";
     <div class="card bg-white p-3 p-6 m-6">
     <h2 v-if="$route.params.id">Edit Field</h2>
     <h2 v-else>New Field</h2>
-    <label>Input base table information.</label>
+    <label>Input base information.</label>
     </div>
     <Toast />
     <form @submit.prevent="saveField" class="mt-4">
@@ -64,6 +64,7 @@ import Tabs from "primevue/tabs";
                     </FloatLabel>
                     <Message v-if="errors.description" severity="error" variant="simple" size="small">{{errors.description[0]}}</Message>
                 </div>
+
             </div>
             <div class="bg-zinc-200">
                 <div class="p-4 text-right">
@@ -84,6 +85,7 @@ export default {
         return{
             name: null,
             description: null,
+            status: null,
             types: [],
             type_id: null,
             validation: null,
@@ -104,7 +106,7 @@ export default {
     },
     methods:{
         getTypes(){
-            axios.get('/api/types')
+            axios.get('/api/dbd/v1/types')
                 .then(response => {
                     this.types = response.data;
                 })
@@ -134,7 +136,7 @@ export default {
 
         },*/
         getComponent(){
-            axios.get('/api/components')
+            axios.get('/api/dbd/v1/components')
                 .then(response => {
                     this.components = response.data.components;
                 })
@@ -142,13 +144,14 @@ export default {
 
         getField(){
             if(this.$route.params.id){
-                axios.get('/api/field/'+this.$route.params.id)
+                axios.get('/api/dbd/v1/column/'+this.$route.params.id)
                     .then(response => {
                         this.name = response.data.field.name;
                         this.type_id = response.data.field.type_id;
                         this.validation = response.data.field.validation;
                         this.component_id = response.data.field.component_id;
                         this.description = response.data.field.description;
+                        this.status = response.data.field.status;
                     })
             }else{
                 this.name = null;
@@ -164,10 +167,10 @@ export default {
             let url;
             if(this.$route.params.id) {//Редактировать проэкт
                 method = 'put'
-                url = '/api/field/'+this.$route.params.id
+                url = '/api/dbd/v1/column/'+this.$route.params.id
             }else{//Новый проэкт
                 method = 'post'
-                url = '/api/field/'+this.$route.params.table_id
+                url = '/api/dbd/v1/column/'+this.$route.params.table_id
             }
             axios({
                 method: method,

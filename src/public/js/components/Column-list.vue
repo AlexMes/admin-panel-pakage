@@ -41,32 +41,33 @@ export default {
     data(){
         return{
             fieldList: null,
-            columns: null,
+            columns: null
         }
     },
     mounted() {
-        this.getFields()
+        this.getColumns()
     },
     watch: {
         '$route.path': {
-            handler: 'getFields',
+            handler: 'getColumns',
             immediate: true // Запустить getTable при зменении id pTable
         }
     },
     methods: {
-        getFields() {
+        getColumns() {
             this.columns = [
                 { field: 'name', header: 'Name' },
                 { field: 'type_name', header: 'Type' },
                 { field: 'validation', header: 'Validation' },
                 { field: 'component_name', header: 'Component' },
                 { field: 'description', header: 'Description' },
+                { field: 'status', header: 'Status' },
             ];
 
             if(this.$route.params.id){
-                axios.get('/api/fields/' + this.$route.params.id)
+                axios.get('/api/dbd/v1/columns/' + this.$route.params.id)
                     .then(response => {
-                        this.fieldList = response.data.fields
+                        this.fieldList = response.data.columns
                     })
                     .catch(error => {
                         this.$emit('login')

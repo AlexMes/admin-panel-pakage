@@ -10,43 +10,27 @@ import { watch } from 'vue';
     </div>
     <div v-if="token" class="w-full">
         <!--    ******************-->
-        <small class="ps-2">Projects</small>
+        <small class="ps-2">Tables</small>
         <!--    ******************-->
-        <router-link active-class="active-link" v-if="token" class="main-menu-link" :to="{ name: 'project.create' }">
-            <i class="pi pi-plus px-1"></i>
-            New Project
-        </router-link>
-
-        <div v-for="project in projects" >
+        <div class="ps-4">
             <router-link active-class="active-link" class="main-menu-link"
-                         :to="{ path: '/adminpanel/project/' + project.id }"
-                         @click="showTables(project.id)">
-                <i :class="JSON.parse(project.details).icon?JSON.parse(project.details).icon : 'pi pi-wrench px-1'"></i>
-                {{ project.name }}
+                         :to="{ path: '/adminpanel/project/'+project.id+'/create/table/' }">
+                <i class="pi pi-plus px-1"></i>
+                New Table
             </router-link>
-            <div class="ps-4" :class="{ 'd-block': showingTablesNavigationDropdown['project_'+project.id], 'd-none': !showingTablesNavigationDropdown['project_'+project.id] }">
-                <router-link active-class="active-link" class="main-menu-link"
-                             :to="{ path: '/adminpanel/project/'+project.id+'/create/table/' }">
-                    <i class="pi pi-plus px-1"></i>
-                    New Table
-                </router-link>
-                <router-link active-class="active-link" v-for="table in project.tables" class="main-menu-link"
-                             :to="{ path: '/adminpanel/table/' + table.id }">
-                    {{ table.name }}
-                </router-link>
-            </div>
+            <router-link active-class="active-link" v-for="table in project.tables" class="main-menu-link"
+                         :to="{ path: '/adminpanel/table/' + table.id }">
+                {{ table.name }}
+            </router-link>
         </div>
+
         <!--    ******************-->
         <small class="ps-2">Settings</small>
         <!--    ******************-->
-        <router-link active-class="active-link" v-if="token" class="main-menu-link" :to="{ name: 'components' }">
-            <i class="pi pi-box px-1"></i>
-            Components
-        </router-link>
         <router-link active-class="active-link" v-if="token" class="main-menu-link" :to="{ name: 'users' }">
             <i class="pi pi-minus px-1"></i>
             <i class="pi pi-users px-1"></i>
-            Users
+            Developers
         </router-link>
         <router-link active-class="active-link" v-if="token" class="main-menu-link" :to="{ name: 'user.profile' }">
             <i class="pi pi-minus px-1"></i>
@@ -67,6 +51,7 @@ export default {
         return {
             token: null,
             projects: {},
+            project: {},
             showingTablesNavigationDropdown: {}
         }
     },
@@ -97,10 +82,16 @@ export default {
         },
         getMenu(){
             this.getToken()
-            axios.get('/api/menu')
+            axios.post('/api/dbd/v1/menu',
+                {
+                    project_id: 23
+                }
+            )
                 .then(response => {
                     if(response.data){
                         this.projects = response.data[0];
+                        this.project = response.data[0];
+                        console.log(this.project.tables);
                         this.showingTablesNavigationDropdown = response.data[1];
                     }
                 })
