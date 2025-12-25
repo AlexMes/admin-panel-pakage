@@ -11,6 +11,8 @@ window.axios.defaults.baseURL = 'https://admin-panel.local';
 window.axios.defaults.withCredentials = true;
 window.axios.defaults.withXSRFToken = true;
 
+localStorage.setItem('project', 23)
+
 window.axios.interceptors.response.use({}, error => {
     if (error.response.status === 401 || error.response.status === 403 || error.response.status === 419) {
         const token = localStorage.getItem('token');

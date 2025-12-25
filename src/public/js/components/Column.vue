@@ -25,7 +25,7 @@ import Tabs from "primevue/tabs";
 
                 <div class="flex justify-left mt-4 p-4">
                     <FloatLabel class="">
-                        <InputText id="name" v-model="name" aria-describedby="name-help" class="w-75"/>
+                        <InputText id="name" v-model="name" :disabled="$route.params.id" aria-describedby="name-help" class="w-75"/>
                         <label for="name">Name</label>
                     </FloatLabel>
                     <Message v-if="errors.name" severity="error" variant="simple" size="small">{{ errors.name[0] }}</Message>
@@ -34,7 +34,7 @@ import Tabs from "primevue/tabs";
                 <div class="flex justify-left p-4">
                     <FloatLabel>
                         <div class="card flex justify-center w-75">
-                            <Select id="type" v-model="type_id" :options="types" optionLabel="name" optionValue="id" class="md:w-56" />
+                            <Select id="type" v-model="type_id" :options="types" :disabled="$route.params.id" optionLabel="name" optionValue="id" class="md:w-56" />
                         </div>
                         <label for="type">Type</label>
                     </FloatLabel>
@@ -188,12 +188,9 @@ export default {
                 if (res.response && res.response.status === 422) {// Обработка ошибки 422 (валидации)
                     this.errors = res.response.data.errors
                 }else{
-                    /*this.toast.add({ severity: 'info', summary: 'Confirmed', detail: 'Field updated', life: 3000 });
-                    this.$router.push({path: '/field/'+res.data.field.id})*/
-
                     this.toast.add({ severity: 'info', summary: 'Confirmed', detail: 'Field updated', life: 2000 });
                     if(method === 'post'){
-                        this.$router.push({path: '/field/'+res.data.field.id})
+                        this.$router.push({path: '/adminpanel/field/'+res.data})
                     }
 
 

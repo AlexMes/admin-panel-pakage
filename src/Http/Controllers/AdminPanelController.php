@@ -11,22 +11,22 @@ class AdminPanelController extends Controller
         return view('adminpanel::index');
     }
 
-    public function codegen(){
-        return $this->getCode();
+    public function codegen(Request $request){
+        return $this->getCode($request->table_id);
     }
 
     /**
      * @return void
      * Get code from server
      */
-    public function getCode(){
+    public function getCode($table_id){
         // The URL you are posting to
         $url = 'https://admin-panel.local/api/dbd/v1/code';
 
 // The data you want to POST (e.g., an associative array)
         $post_data = array(
-            'field1' => 'value1',
-            'field2' => 'value2'
+            //'project_id' => ,
+            'table_id' => $table_id
         );
 
 // Convert data to JSON format if the API expects JSON

@@ -22,6 +22,7 @@ const checked = ref(true);
 const dnChecked = ref(false);
 
 import { ref } from 'vue';
+import FloatLabel from "primevue/floatlabel";
 
 </script>
 
@@ -57,12 +58,19 @@ import { ref } from 'vue';
                                 <div class="col-md-2"><Checkbox v-model="checked" binary inputId="timestamps" /><label for="timestamps" class="px-2"> Timestamps </label></div>
                                 <div class="col-md-6"></div>
                             </div>
-                            <div class="flex p-4">
-                                <InputText id="name" v-model="name" aria-describedby="name-help" placeholder="Table Name" class="w-75"/>
-                                <Message v-if="errors.name" severity="error" variant="simple" size="small">{{errors.name[0]}}</Message>
+                            <div class="flex justify-left mt-4 p-4">
+                                <FloatLabel class="">
+                                    <InputText id="name" v-model="name" :disabled="$route.params.id" aria-describedby="name-help" class="w-75"/>
+                                    <label for="name">Name</label>
+                                </FloatLabel>
+                                <Message v-if="errors.name" severity="error" variant="simple" size="small">{{ errors.name[0] }}</Message>
+                                <label v-else >Name for DB migration</label>
                             </div>
-                            <div class="flex justify-left p-4">
-                                <Textarea  id="description" v-model="description" rows="5" cols="30" placeholder="Description" class="w-75"/>
+                            <div class="flex justify-left mt-4 p-4">
+                                <FloatLabel class="">
+                                    <Textarea  id="description" v-model="description" rows="5" cols="30" class="w-75"/>
+                                    <label for="name">description</label>
+                                </FloatLabel>
                                 <Message v-if="errors.description" severity="error" variant="simple" size="small">{{errors.description[0]}}</Message>
                             </div>
                             <div v-if="$route.params.id" class="flex p-4">
@@ -162,7 +170,7 @@ export default {
                         this.errors = res.response.data.errors
                     }else{
                         this.$store.commit('updateMenu')
-                        this.$router.push({path: res.data})
+                        this.$router.push({path: '/adminpanel/table/'+res.data})
                     }
 
                 });
@@ -197,7 +205,8 @@ export default {
             });
         },
         codeGen(){
-            axios.get(this.local_hostname+'/codegen/')
+            //localStorage.getItem('project'))
+            axios.get(this.local_hostname+'/codegen/'+this.$route.params.id)
                 .then(response => {
                     console.log("CodeGen OK!!!!!!!!");
                 })
