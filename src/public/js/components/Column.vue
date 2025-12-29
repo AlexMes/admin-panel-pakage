@@ -83,6 +83,7 @@ export default {
     name: "Component-code",
     data(){
         return{
+            table_id: null,
             name: null,
             description: null,
             status: null,
@@ -97,12 +98,13 @@ export default {
                 type_id: null,
             },
             toast: useToast(),
+            local_hostname: window.location.protocol+'//'+window.location.hostname,
         }
     },
     mounted() {
         this.getTypes()
         this.getComponent()
-        this.getField()
+        this.getColumn()
     },
     methods:{
         getTypes(){
@@ -142,10 +144,11 @@ export default {
                 })
         },
 
-        getField(){
+        getColumn(){
             if(this.$route.params.id){
                 axios.get('/api/dbd/v1/column/'+this.$route.params.id)
                     .then(response => {
+                        this.table_id = response.data.field.table_id;
                         this.name = response.data.field.name;
                         this.type_id = response.data.field.type_id;
                         this.validation = response.data.field.validation;
@@ -154,6 +157,7 @@ export default {
                         this.status = response.data.field.status;
                     })
             }else{
+                this.table_id = this.$route.params.table_id;
                 this.name = null;
                 this.type_id = null;
                 this.component_id = null;
@@ -165,10 +169,10 @@ export default {
             this.errors = {}; // Очистка ошибок
             let method;
             let url;
-            if(this.$route.params.id) {//Редактировать проэкт
+            if(this.$route.params.id) {//Редактировать
                 method = 'put'
                 url = '/api/dbd/v1/column/'+this.$route.params.id
-            }else{//Новый проэкт
+            }else{//Новый
                 method = 'post'
                 url = '/api/dbd/v1/column/'+this.$route.params.table_id
             }
@@ -189,15 +193,23 @@ export default {
                     this.errors = res.response.data.errors
                 }else{
                     this.toast.add({ severity: 'info', summary: 'Confirmed', detail: 'Field updated', life: 2000 });
-                    if(method === 'post'){
-                        this.$router.push({path: '/adminpanel/field/'+res.data})
-                    }
-
-
+                    //Запрос на генерацию
+                    this.codeGen()
+                    this.$router.push({path: '/adminpanel/table/'+this.table_id})
                 }
 
             });
         },
+        codeGen(){
+            axios.get(this.local_hostname+'/codegen/'+this.table_id)
+                .then(response => {
+                    console.log("CodeGen OK!!!!!!!!");
+                })
+                .catch(error => {
+                    console.log("CodeGen Error!!!!");
+                })
+
+        }
 
     }
 }

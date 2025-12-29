@@ -12,6 +12,7 @@ class AdminPanelController extends Controller
     }
 
     public function codegen(Request $request){
+        dd($request);
         return $this->getCode($request->table_id);
     }
 

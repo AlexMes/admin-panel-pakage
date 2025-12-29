@@ -23,6 +23,7 @@ const dnChecked = ref(false);
 
 import { ref } from 'vue';
 import FloatLabel from "primevue/floatlabel";
+import column from "./Column.vue";
 
 </script>
 
@@ -53,9 +54,12 @@ import FloatLabel from "primevue/floatlabel";
                     <div class="card mt-4">
                         <div class="bg-white flex justify-center">
                             <div v-if="!$route.params.id" class="row p-4">
-                                <div class="col-md-2"><Checkbox v-model="checked" checked binary inputId="id_increment" /><label for="id_increment" class="px-2"> ID </label></div>
-                                <div class="col-md-2"><Checkbox v-model="dnChecked" binary inputId="soft_del" /><label for="soft_del" class="px-2"> Soft delete </label></div>
-                                <div class="col-md-2"><Checkbox v-model="checked" binary inputId="timestamps" /><label for="timestamps" class="px-2"> Timestamps </label></div>
+
+                                <div v-for="column of columns" :key="column.key" class="col-md-2" style="white-space: nowrap;">
+                                        <Checkbox v-model="selectedColumns" :inputId="column.key" name="column" :value="column.name" style="margin-right: 5px" />
+                                        <label :for="column.key" class="">{{ column.name }}</label>
+                                </div>
+                                <Message v-if="errors.columns" severity="error" variant="simple" size="small">{{ errors.columns[0] }}</Message>
                                 <div class="col-md-6"></div>
                             </div>
                             <div class="flex justify-left mt-4 p-4">
@@ -116,6 +120,14 @@ export default {
 
             activePanel: ref('Fields'), //id open AccordionPanel
             local_hostname: window.location.protocol+'//'+window.location.hostname,
+
+            selectedColumns: ['ID', 'Timestamps'],
+            columns: [
+                { name: "ID", key: "id_increment" },
+                { name: "Soft delete", key: "soft_del" },
+                { name: "Timestamps", key: "timestamps" },
+            ],
+            table_id: null
         }
     },
     mounted() {
@@ -163,6 +175,7 @@ export default {
                 data: {
                     name: this.name,
                     description: this.description,
+                    columns: this.selectedColumns,
                 },
             })
                 .then(res => {
@@ -170,6 +183,9 @@ export default {
                         this.errors = res.response.data.errors
                     }else{
                         this.$store.commit('updateMenu')
+                        this.table_id = res.data
+                        //Запрос на генерацию
+                        this.codeGen()
                         this.$router.push({path: '/adminpanel/table/'+res.data})
                     }
 
@@ -194,6 +210,8 @@ export default {
                         .then(response => {
                             this.toast.add({ severity: 'info', summary: 'Confirmed', detail: 'Table deleted', life: 3000 });
                             this.$store.commit('updateMenu')
+                            //Запрос на генерацию
+                            this.codeGen()
                         })
                         .catch(error => {
                             this.toast.add({ severity: 'error', summary: 'Rejected', detail: 'ERROR!!! Table not deleted', life: 3000 });
@@ -205,9 +223,13 @@ export default {
             });
         },
         codeGen(){
-            //localStorage.getItem('project'))
-            axios.get(this.local_hostname+'/codegen/'+this.$route.params.id)
-                .then(response => {
+            axios({
+                method: 'get',
+                url: this.local_hostname+'/codegen/'+this.table_id,
+                data: {
+                    columns: this.selectedColumns
+                },
+            }).then(response => {
                     console.log("CodeGen OK!!!!!!!!");
                 })
                 .catch(error => {

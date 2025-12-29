@@ -18,12 +18,6 @@ const dnChecked = ref(false);
                 <div class="text-left">
                     <Button @click="$router.push({path: '/adminpanel/create/field/' + $route.params.id})"><i class="pi pi-plus px-1"></i>NEW</Button>
                 </div>
-                <div class="row mt-2">
-                    <div class="col-md-2"><Checkbox v-model="checked" checked binary disabled  inputId="id_increment" /><label for="id_increment" class="px-2"> ID </label></div>
-                    <div class="col-md-2"><Checkbox v-model="dnChecked" binary disabled  inputId="soft_del" /><label for="soft_del" class="px-2"> Soft delete </label></div>
-                    <div class="col-md-2"><Checkbox v-model="checked" binary disabled  inputId="timestamps" /><label for="timestamps" class="px-2"> Timestamps </label></div>
-                    <div class="col-md-6"></div>
-                </div>
             </template>
             <Column v-for="col of columns" :key="col.field" :field="col.field" :header="col.header" :sortable="col.sortable"></Column>
             <Column class="w-24 !text-end">
