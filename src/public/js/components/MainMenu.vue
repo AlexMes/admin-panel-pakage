@@ -91,7 +91,6 @@ export default {
                     if(response.data){
                         this.projects = response.data[0];
                         this.project = response.data[0];
-                        console.log(this.project.tables);
                         this.showingTablesNavigationDropdown = response.data[1];
                     }
                 })

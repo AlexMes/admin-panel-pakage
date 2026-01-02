@@ -34,13 +34,22 @@ import Tabs from "primevue/tabs";
                 <div class="flex justify-left p-4">
                     <FloatLabel>
                         <div class="card flex justify-center w-75">
-                            <Select id="type" v-model="type_id" :options="types" :disabled="$route.params.id" optionLabel="name" optionValue="id" class="md:w-56" />
+                            <Select @change="columnTypeCheck()" v-model="type_id" :options="types" :disabled="$route.params.id" optionLabel="name" optionValue="id" class="md:w-56" />
                         </div>
                         <label for="type">Type</label>
                     </FloatLabel>
                     <Message v-if="errors.type_id" severity="error" variant="simple" size="small">{{ errors.type_id[0] }}</Message>
                 </div>
-                <div class="flex justify-left mt-4 p-4">
+                <div  v-if="foreign_key" class="flex justify-left p-4">
+                    <FloatLabel>
+                        <div class="card flex justify-center w-75">
+                            <Select @change="setName()" v-model="foreign_key_table_id" :options="data_tables" :disabled="$route.params.id" optionLabel="name" optionValue="id" class="md:w-56" />
+                        </div>
+                        <label for="type">Select a table</label>
+                    </FloatLabel>
+                    <Message v-if="errors.foreign_key_table_id" severity="error" variant="simple" size="small">{{ errors.foreign_key_table_id[0] }}</Message>
+                </div>
+                <div class="flex justify-left p-4">
                     <FloatLabel class="">
                         <InputText id="validation" v-model="validation" aria-describedby="name-help" class="w-75"/>
                         <label for="validation">Validation</label>
@@ -99,12 +108,19 @@ export default {
             },
             toast: useToast(),
             local_hostname: window.location.protocol+'//'+window.location.hostname,
+
+            foreign_key: null,
+            foreign_key_table_id: null,
+            data_tables: [],
+
         }
     },
     mounted() {
         this.getTypes()
         this.getComponent()
         this.getColumn()
+        this.getDtaTables()
+        this.columnTypeCheck()
     },
     methods:{
         getTypes(){
@@ -184,6 +200,8 @@ export default {
                     description: this.description,
                     table_id: this.$route.params.table_id,
                     type_id: this.type_id,
+                    foreign_key_table_id: this.foreign_key_table_id,
+                    foreign_key_table_name: this.getName(this.foreign_key_table_id),
                     validation: this.validation,
                     component_id: this.component_id,
                 },
@@ -209,6 +227,37 @@ export default {
                     console.log("CodeGen Error!!!!");
                 })
 
+        },
+
+        getDtaTables(){
+            axios.get('/api/dbd/v1/tables/data-tables-list/23')
+                .then(r => {
+                    if(r.data){
+                        this.data_tables = r.data.tables
+                        console.log(this.data_tables);
+                    }
+                })
+        },
+        columnTypeCheck(){
+            if(this.type_id == 46){
+                this.foreign_key = true;
+                this.getDtaTables()
+            }else{
+                this.foreign_key = false;
+            }
+        },
+        setName(){
+            let foreign_key_table_name = this.getName(this.foreign_key_table_id)
+            this.name = foreign_key_table_name+'_id';
+        },
+        getName(id){
+            var len = this.data_tables.length;
+            for (var i = 0; i < len; i++) {
+                if(this.data_tables[i].id == id){
+                    return this.data_tables[i].name;
+                }
+
+            }
         }
 
     }

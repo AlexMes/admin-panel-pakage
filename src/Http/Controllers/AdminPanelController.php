@@ -12,8 +12,8 @@ class AdminPanelController extends Controller
     }
 
     public function codegen(Request $request){
-        dd($request);
-        return $this->getCode($request->table_id);
+        dd($this->getCode($request->table_id));
+        //return $this->getCode($request->table_id);
     }
 
     /**
@@ -26,7 +26,6 @@ class AdminPanelController extends Controller
 
 // The data you want to POST (e.g., an associative array)
         $post_data = array(
-            //'project_id' => ,
             'table_id' => $table_id
         );
 
@@ -71,6 +70,7 @@ class AdminPanelController extends Controller
         if ($httpcode == 200) {
             $decoded_response = json_decode($response_body, true);
             // Use the data as needed
+            dd("Process the response!!!!!!!!!!!!!!!!!!!!");
             print_r($decoded_response);
         } else {
             echo "HTTP Error Code: $httpcode";
