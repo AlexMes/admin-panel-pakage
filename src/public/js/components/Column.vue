@@ -34,11 +34,16 @@ import Tabs from "primevue/tabs";
                 <div class="flex justify-left p-4">
                     <FloatLabel>
                         <div class="card flex justify-center w-75">
-                            <Select @change="columnTypeCheck()" v-model="type_id" :options="types" :disabled="$route.params.id" optionLabel="name" optionValue="id" class="md:w-56" />
+                            <Select @change="columnTypeCheck()"
+                                    filter v-model="type_id" :options="types" :disabled="$route.params.id"
+                                    optionLabel="name" optionValue="id"
+                                    optionGroupLabel="label" optionGroupChildren="items"
+                                    class="md:w-56" />
                         </div>
                         <label for="type">Type</label>
                     </FloatLabel>
                     <Message v-if="errors.type_id" severity="error" variant="simple" size="small">{{ errors.type_id[0] }}</Message>
+                    <label v-else >{{ type_description }}</label>
                 </div>
                 <div  v-if="foreign_key" class="flex justify-left p-4">
                     <FloatLabel>
@@ -48,6 +53,31 @@ import Tabs from "primevue/tabs";
                         <label for="type">Select a table</label>
                     </FloatLabel>
                     <Message v-if="errors.foreign_key_table_id" severity="error" variant="simple" size="small">{{ errors.foreign_key_table_id[0] }}</Message>
+                </div>
+                <div  v-if="param_1_show" class="flex justify-left p-4">
+                    <div class="row  w-75">
+                        <div class="col-6">
+                            <FloatLabel>
+                                <div class="card flex justify-center w-75">
+                                    <InputText id="param_1" v-model="param_1" aria-describedby="name-help" class="75"/>
+                                </div>
+                                <label for="param_1">{{ param_1_name }}</label>
+                            </FloatLabel>
+                            <Message v-if="errors.param_1" severity="error" variant="simple" size="small">{{ errors.param_1[0] }}</Message>
+                            <label v-else>{{ param_1_description }}</label>
+                        </div>
+                        <div v-if="param_2_show" class="col-6">
+                            <FloatLabel>
+                                <div class="card flex justify-center w-75">
+                                    <InputText id="param_2" v-model="param_2" aria-describedby="name-help" class="75"/>
+                                </div>
+                                <label for="param_2">{{ param_2_name }}</label>
+                            </FloatLabel>
+                            <Message v-if="errors.param_2" severity="error" variant="simple" size="small">{{ errors.param_2[0] }}</Message>
+                            <label v-else>{{ param_2_description }}</label>
+                        </div>
+                    </div>
+
                 </div>
                 <div class="flex justify-left p-4">
                     <FloatLabel class="">
@@ -98,6 +128,7 @@ export default {
             status: null,
             types: [],
             type_id: null,
+            type_description: null,
             validation: null,
             components: [],
             component_id: null,
@@ -111,49 +142,52 @@ export default {
 
             foreign_key: null,
             foreign_key_table_id: null,
+            param_1_show: null,
+            param_1_name: null,
+            param_1_description: null,
+            param_1: null,
+            param_2_show: null,
+            param_2_name: null,
+            param_2_description: null,
+            param_2: null,
+            enum_show: null,
+            enum: null,
             data_tables: [],
+
+            column_type: null,
 
         }
     },
     mounted() {
         this.getTypes()
-        this.getComponent()
+        this.getComponents()
         this.getColumn()
         this.getDtaTables()
-        this.columnTypeCheck()
     },
     methods:{
         getTypes(){
             axios.get('/api/dbd/v1/types')
                 .then(response => {
+                    console.log(response)
                     this.types = response.data;
                 })
         },
-        /*getTypeByID(id){
-            let param = null
-            this.types.forEach(type => {
-                if(type.id === id){
-                    param = JSON.parse(type.details).parameters
+        getType(id){
+            var group_len = this.types.length;
+            for (var g = 0; g < group_len; g++) {
+                console.log(this.types[g]['items'])
+                var len = this.types[g]['items'].length;
+                for (var i = 0; i < len; i++) {
+                    if (this.types[g]['items'][i].id == id) {
+                        this.types[g]['items'][i].param_1 = JSON.parse(this.types[g]['items'][i].param_1)
+                        this.types[g]['items'][i].param_2 = JSON.parse(this.types[g]['items'][i].param_2)
+                        return this.types[g]['items'][i];
+                    }
                 }
-            })
-            return param
-        },
-        selectTypeChange() {
-            this.parameters = this.getTypeByID(this.selectedType);
-
-            console.log(JSON.stringify(this.parameters) , " - this.parameters.length - Change")
-            if(JSON.stringify(this.parameters) !== undefined && JSON.stringify(this.parameters) !== null){
-                if(this.parameters[0] && this.parameters[0].type === 'number') {this.parameters_0 = this.parameters[0]; this.parameters_val_0=this.parameters[0].default} else {this.parameters_val_0 = null; this.parameters_0 = null}
-                if(this.parameters[1] && this.parameters[1].type === 'number') {this.parameters_1 = this.parameters[1]; this.parameters_val_1=this.parameters[1].default} else {this.parameters_val_1 = null; this.parameters_1 = null}
-                if(this.parameters[2] && this.parameters[2].type === 'array')  {this.parameters_2 = this.parameters[2]; }                                                 else {this.parameters_val_2 = null; this.parameters_2 = null}
-            }else{
-                this.parameters_val_0 = null; this.parameters_0 = null
-                this.parameters_val_1 = null; this.parameters_1 = null
-                this.parameters_val_2 = null; this.parameters_2 = null
             }
+        },
 
-        },*/
-        getComponent(){
+        getComponents(){
             axios.get('/api/dbd/v1/components')
                 .then(response => {
                     this.components = response.data.components;
@@ -200,6 +234,8 @@ export default {
                     description: this.description,
                     table_id: this.$route.params.table_id,
                     type_id: this.type_id,
+                    param_1: this.param_1,
+                    param_2: this.param_2,
                     foreign_key_table_id: this.foreign_key_table_id,
                     foreign_key_table_name: this.getName(this.foreign_key_table_id),
                     validation: this.validation,
@@ -212,19 +248,19 @@ export default {
                 }else{
                     this.toast.add({ severity: 'info', summary: 'Confirmed', detail: 'Field updated', life: 2000 });
                     //Запрос на генерацию
-                    this.codeGen()
+                    this.codeGen(this.table_id)
                     this.$router.push({path: '/adminpanel/table/'+this.table_id})
                 }
 
             });
         },
-        codeGen(){
-            axios.get(this.local_hostname+'/codegen/'+this.table_id)
+        codeGen(id){
+            axios.get(this.local_hostname+'/codegen/'+id)
                 .then(response => {
-                    console.log("CodeGen OK!!!!!!!!");
+                    console.log("CodeGen OK!");
                 })
                 .catch(error => {
-                    console.log("CodeGen Error!!!!");
+                    console.log("CodeGen Error!");
                 })
 
         },
@@ -239,11 +275,44 @@ export default {
                 })
         },
         columnTypeCheck(){
-            if(this.type_id == 46){
-                this.foreign_key = true;
-                this.getDtaTables()
-            }else{
-                this.foreign_key = false;
+            this.column_type = this.getType(this.type_id);
+
+            console.log("-------------------")
+            console.log(this.column_type)
+            console.log(this.column_type.param_1)
+            console.log(this.column_type.param_2)
+            console.log("-------------------")
+
+            this.param_1_show = false;
+            this.param_2_show = false;
+            this.foreign_key = false;//Show select table
+
+            this.type_description = this.column_type.description;
+
+            if(this.column_type.param_1 !== null){
+                this.param_1_show = true;
+                this.param_1 = this.column_type.param_1.value;
+                this.param_1_name = this.column_type.param_1.name;
+                this.param_1_description = this.column_type.param_1.description;
+            }
+            if(this.column_type.param_2 !== null){
+                this.param_2_show = true;
+                this.param_2 = this.column_type.param_2.value;
+                this.param_2_name = this.column_type.param_2.name;
+                this.param_2_description = this.column_type.param_2.description;
+            }
+
+
+            switch (this.type_id) {//Show select table
+                case "foreignKey":
+                case "foreignId":
+                case "foreignUlid":
+                case "foreignUuid":
+                case "foreignIdFor":
+                case "morphs":
+                case "nullableMorphs":
+                    this.foreign_key = true;
+                    break;
             }
         },
         setName(){

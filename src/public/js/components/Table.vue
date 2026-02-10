@@ -30,17 +30,15 @@ import column from "./Column.vue";
 
 <template>
     <div class="card bg-white p-3 p-6 m-6">
-        <div class="col-11">
         <div class="row">
-            <div class="col-11">
+            <div class="col-7">
                 <h2 v-if="$route.params.id">Edit Table</h2>
                 <h2 v-else>New Table</h2>
                 <label>Input base table information.</label>
             </div>
-            <div class="col-1 ">
-                <Button @click="test()" style="margin-left: 5px;"><i class="pi pi-cog px-1"></i>TEST</Button>
+            <div v-if="$route.params.id" class="col-5 d-flex justify-content-end">
+                <Button @click="codeGen($route.params.id)" style="margin-left: 5px;"><i class="pi pi-cog px-1"></i>GENERATE</Button>
             </div>
-        </div>
         </div>
     </div>
 
@@ -194,10 +192,10 @@ export default {
             this.errors = {}; // Очистка ошибок
             let method;
             let url;
-            if(this.$route.params.id) {//Редактировать проэкт
+            if(this.$route.params.id) {//Редактировать таблицу
                 method = 'put'
                 url = '/api/dbd/v1/table/'+this.$route.params.id
-            }else{//Новый проэкт
+            }else{//Новый таблица
                 method = 'post'
                 url = '/api/dbd/v1/table/'+this.$route.params.project_id
             }
@@ -219,7 +217,7 @@ export default {
                         this.$store.commit('updateMenu')
                         this.table_id = res.data
                         //Запрос на генерацию
-                        this.codeGen()
+                        this.codeGen(res.data)
                         this.$router.push({path: '/adminpanel/table/'+res.data})
                     }
 
@@ -256,27 +254,22 @@ export default {
                 }
             });
         },
-        codeGen(){
+        codeGen(id){
             axios({
                 method: 'get',
-                url: this.local_hostname+'/codegen/'+this.$route.params.id,
+                url: this.local_hostname+'/codegen/'+id,
                 data: {
                     columns: this.selectedColumns
                 },
             }).then(response => {
-                    console.log("CodeGen OK!!!!!!!!");
+                    console.log("CodeGen OK!!!");
                 })
                 .catch(error => {
-                    console.log("CodeGen Error!!!!");
+                    console.log("CodeGen Error!!!");
                 })
 
         },
-        test(){
-            this.codeGen()
-            /*console.log( "----------------------------test------------------------------" );
-            console.log( this.mtm_tab.length )
-            console.log( "--------------------------------------------------------------" );*/
-        },
+        //реакція на вібір 'Many to many'
         columnCheck(id, checked){
             if(id == 'many_to_many' & checked == true){
                 this.selectedColumns = ['Many to many'];
@@ -291,6 +284,7 @@ export default {
 
             }
         },
+        //генерація ім"я таблиці 'Many to many'
         setName(){
             let tab_1_name = this.getName(this.mtm_tab_1)
             let tab_2_name = this.getName(this.mtm_tab_2)

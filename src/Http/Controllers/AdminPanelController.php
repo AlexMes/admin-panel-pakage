@@ -12,7 +12,21 @@ class AdminPanelController extends Controller
     }
 
     public function codegen(Request $request){
-        dd($this->getCode($request->table_id));
+        foreach ($this->getCode($request->table_id) as $key => $value) {
+            foreach ($value as $key2 => $value2) {
+                if (!file_exists(base_path().$value2["path"])) {
+                    mkdir(base_path().$value2["path"], 0777, true);
+                }
+                file_put_contents(base_path().$value2["path"].$value2["file_name"], $value2["code"]);
+            }
+        }
+        $command = 'php '.base_path().'/artisan migrate';
+        $output = null;
+        $return_var = null;
+        exec($command, $output, $return_var);
+        dd($command, $output, $return_var);
+        //FAIL
+
         //return $this->getCode($request->table_id);
     }
 
@@ -68,10 +82,10 @@ class AdminPanelController extends Controller
 
 // Process the response
         if ($httpcode == 200) {
-            $decoded_response = json_decode($response_body, true);
+            return json_decode($response_body, true);
+            //$decoded_response = json_decode($response_body, true);
             // Use the data as needed
-            dd("Process the response!!!!!!!!!!!!!!!!!!!!");
-            print_r($decoded_response);
+            //print_r($decoded_response);
         } else {
             echo "HTTP Error Code: $httpcode";
             echo "Response Body: $response_body";
