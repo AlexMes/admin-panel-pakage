@@ -56,7 +56,11 @@ export default {
         }
     },
     mounted() {
-        this.getUser()
+        const token = localStorage.getItem("token")
+        if(token){
+            this.getUser()
+        }
+
     },
     methods:{
         getUser(){

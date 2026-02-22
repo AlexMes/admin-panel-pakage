@@ -43,6 +43,9 @@ export default {
                     this.$store.commit('updateMenu')
                     this.$router.push({name: 'user.personal'})
                 }).catch(function (error) {
+                    /*console.log("******************************************************************")
+                    console.log(error)
+                    console.log("******************************************************************")*/
                     });
             });
         }

@@ -49,7 +49,7 @@ import column from "./Column.vue";
         </TabList>
         <TabPanels>
             <TabPanel value="Details">
-                <form @submit.prevent="saveTable">
+                <form @submit.prevent="save">
                     <div class="card mt-4">
                         <div class="bg-white flex justify-center p-4">
                             <div v-if="!$route.params.id" class="row">
@@ -69,26 +69,34 @@ import column from "./Column.vue";
                             </div>
                             <div v-if="many_to_many" class="row" style="animation: demo-overlay-out 250ms ease-in;">
                                 <div class="col-md-3 flex justify-left mt-4 ">
-                                    <Select v-model="mtm_tab_1" @change="setName()" name="mtm_tab_1" :options="mtm_tab" optionLabel="name" optionValue="id"  placeholder="Select a table" fluid />
+                                    <Select v-model="mtm_tab_1" @change="setManyToManyTableNameByConvention()" name="mtm_tab_1" :options="mtm_tab" optionLabel="name" optionValue="id"  placeholder="Select a table" fluid />
                                     <Message v-if="errors.mtm_tab_1" severity="error" variant="simple" size="small">{{ errors.mtm_tab_1[0] }}</Message>
                                 </div>
                                 <div class="col-md-3 flex justify-left mt-4 ">
-                                    <Select v-model="mtm_tab_2" @change="setName()" name="mtm_tab_2" :options="mtm_tab" optionLabel="name" optionValue="id" placeholder="Select a table" fluid />
+                                    <Select v-model="mtm_tab_2" @change="setManyToManyTableNameByConvention()" name="mtm_tab_2" :options="mtm_tab" optionLabel="name" optionValue="id" placeholder="Select a table" fluid />
                                     <Message v-if="errors.mtm_tab_2" severity="error" variant="simple" size="small">{{ errors.mtm_tab_2[0] }}</Message>
                                 </div>
                             </div>
                             <div class="flex justify-left mt-4 ">
                                 <FloatLabel class="">
-                                    <InputText id="name" v-model="name" :disabled="$route.params.id" aria-describedby="name-help" class="w-75"/>
+                                    <InputText id="name" v-model="name" :disabled="$route.params.id || many_to_many" aria-describedby="name-help" class="w-75"/>
                                     <label for="name">Name</label>
                                 </FloatLabel>
                                 <Message v-if="errors.name" severity="error" variant="simple" size="small">{{ errors.name[0] }}</Message>
                                 <label v-else >Name for DB migration</label>
                             </div>
+                            <div v-if="!many_to_many" class="flex justify-left mt-4 ">
+                                <FloatLabel class="">
+                                    <InputText id="label" v-model="label" :disabled="$route.params.id" aria-describedby="label-help" class="w-75"/>
+                                    <label>Label</label>
+                                </FloatLabel>
+                                <Message v-if="errors.label" severity="error" variant="simple" size="small">{{ errors.label[0] }}</Message>
+                                <label v-else >Label for main menu</label>
+                            </div>
                             <div class="flex justify-left mt-4 ">
                                 <FloatLabel class="">
                                     <Textarea  id="description" v-model="description" rows="5" cols="30" class="w-75"/>
-                                    <label for="name">description</label>
+                                    <label>description</label>
                                 </FloatLabel>
                                 <Message v-if="errors.description" severity="error" variant="simple" size="small">{{errors.description[0]}}</Message>
                             </div>
@@ -125,6 +133,7 @@ export default {
     data() {
         return{
             name: null,
+            label: null,
             description: null,
             details: null,
             errors: {
@@ -180,7 +189,7 @@ export default {
                 this.activePanel = 'Details'
             }
         },
-        getManyToManyTables(){
+        getTablesList(){
             axios.get('/api/dbd/v1/tables/data-tables-list/23')
                 .then(r => {
                     if(r.data){
@@ -188,8 +197,7 @@ export default {
                     }
                 })
         },
-        saveTable(){
-            this.errors = {}; // Очистка ошибок
+        save(){
             let method;
             let url;
             if(this.$route.params.id) {//Редактировать таблицу
@@ -199,11 +207,35 @@ export default {
                 method = 'post'
                 url = '/api/dbd/v1/table/'+this.$route.params.project_id
             }
+
+            if(!this.many_to_many){
+                axios.post('/api/dbd/v1/getTableNameByConvention',
+                    {
+                        name: this.name,
+                    })
+                    .then(response => {
+                        this.name = response.data;
+                        /*-----------------------------------------------*/
+                        this.saveAxios(method, url)
+                        /*-----------------------------------------------*/
+                    })
+                    .catch(error => {
+
+                    })
+            }else{
+                this.saveAxios(method, url)
+            }
+
+
+
+        },
+        saveAxios(method, url){
             axios({
                 method: method,
                 url: url,
                 data: {
                     name: this.name,
+                    label: this.label,
                     description: this.description,
                     columns: this.selectedColumns,
                     mtm_tab_1: this.mtm_tab_1,
@@ -219,6 +251,10 @@ export default {
                         //Запрос на генерацию
                         this.codeGen(res.data)
                         this.$router.push({path: '/adminpanel/table/'+res.data})
+                        this.errors = {}; // Очистка ошибок
+                        this.name = "";
+                        this.label = "";
+                        this.description = "";
                     }
 
                 });
@@ -271,10 +307,14 @@ export default {
         },
         //реакція на вібір 'Many to many'
         columnCheck(id, checked){
+            this.errors = {};
+            this.name = "";
+            this.label = "";
+            this.description = "";
             if(id == 'many_to_many' & checked == true){
                 this.selectedColumns = ['Many to many'];
                 this.many_to_many = true
-                this.getManyToManyTables()
+                this.getTablesList()
             }else{
                 const indexOf = this.selectedColumns.indexOf('Many to many')
                 if(indexOf != -1){
@@ -285,12 +325,21 @@ export default {
             }
         },
         //генерація ім"я таблиці 'Many to many'
-        setName(){
-            let tab_1_name = this.getName(this.mtm_tab_1)
-            let tab_2_name = this.getName(this.mtm_tab_2)
-            this.name = tab_1_name+'_'+tab_2_name;
+        setManyToManyTableNameByConvention(){
+            axios.post('/api/dbd/v1/getManyToManyTableNameByConvention',
+                {
+                    mtm_tab_1: this.getNameById(this.mtm_tab_1),
+                    mtm_tab_2: this.getNameById(this.mtm_tab_2),
+                })
+                .then(response => {
+                    this.name = response.data;
+                })
+                .catch(error => {
+
+                })
+            this.label = "many_to_many";
         },
-        getName(id){
+        getNameById(id){
             var len = this.mtm_tab.length;
             for (var i = 0; i < len; i++) {
                 if(this.mtm_tab[i].id == id){
@@ -298,7 +347,20 @@ export default {
                 }
 
             }
+        },
+        setTableNameByConvention(){
+            axios.post('/api/dbd/v1/getTableNameByConvention',
+                {
+                    name: this.name,
+                })
+                .then(response => {
+                    this.name = response.data;
+                })
+                .catch(error => {
+
+                })
         }
+
     }
 
 }

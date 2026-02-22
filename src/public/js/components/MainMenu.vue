@@ -57,7 +57,10 @@ export default {
     },
     mounted() {
         this.getToken()
-        this.getMenu()
+        if(this.token){
+            this.getMenu()
+        }
+
     },
     watch: {
         '$store.state.getMenu': {
@@ -81,19 +84,21 @@ export default {
                 })*/
         },
         getMenu(){
-            this.getToken()
-            axios.post('/api/dbd/v1/menu',
-                {
-                    project_id: 23
-                }
-            )
-                .then(response => {
-                    if(response.data){
-                        this.projects = response.data[0];
-                        this.project = response.data[0];
-                        this.showingTablesNavigationDropdown = response.data[1];
+            const token = localStorage.getItem("token")
+            if(token) {
+                axios.post('/api/dbd/v1/menu',
+                    {
+                        project_id: 23
                     }
-                })
+                )
+                    .then(response => {
+                        if (response.data) {
+                            this.projects = response.data[0];
+                            this.project = response.data[0];
+                            this.showingTablesNavigationDropdown = response.data[1];
+                        }
+                    })
+            }
         },
         showTables(project_id){//Показывать или нет таблицы проэкта в меню
             this.getToken()
