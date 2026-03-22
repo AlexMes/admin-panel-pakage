@@ -42,84 +42,120 @@ import column from "./Column.vue";
         </div>
     </div>
 
-    <Tabs v-model:value="activePanel" class="mt-4">
-        <TabList>
-            <Tab value="Details">Details</Tab>
-            <Tab v-if="$route.params.id" value="Fields">Fields</Tab>
-        </TabList>
-        <TabPanels>
-            <TabPanel value="Details">
-                <form @submit.prevent="save">
-                    <div class="card mt-4">
+    <Toast />
+    <div class="card mt-4">
+        <Tabs v-model:value="activePanel" >
+            <TabList>
+                <Tab value="Details">Details</Tab>
+                <Tab v-if="$route.params.id" value="Fields">Fields</Tab>
+            </TabList>
+            <TabPanels>
+                <TabPanel value="Details">
+                    <div class="card bg-white mt-4">
                         <div class="bg-white flex justify-center p-4">
-                            <div v-if="!$route.params.id" class="row">
+                            <div v-if="!$route.params.id" class="row pb-5">
                                 <div v-for="column of columns" :key="column.key" class="col-md-2" style="white-space: nowrap;">
-                                        <Checkbox
-                                            v-model="selectedColumns"
-                                            @change="columnCheck($event.target.id, $event.target.checked)"
-                                            :inputId="column.key" name="column"
-                                            :value="column.name"
-                                            :disabled="column.disabled"
-                                            style="margin-right: 5px"
-                                        />
-                                        <label :for="column.key" class="">{{ column.name }}</label>
+                                    <Checkbox
+                                        v-model="selectedColumns"
+                                        @change="columnCheck($event.target.id, $event.target.checked)"
+                                        :inputId="column.key" name="column"
+                                        :value="column.name"
+                                        :disabled="column.disabled"
+                                        style="margin-right: 5px"
+                                    />
+                                    <label :for="column.key" >{{ column.name }}</label>
                                 </div>
                                 <Message v-if="errors.columns" severity="error" variant="simple" size="small">{{ errors.columns[0] }}</Message>
                                 <div class="col-md-4"></div>
                             </div>
-                            <div v-if="many_to_many" class="row" style="animation: demo-overlay-out 250ms ease-in;">
-                                <div class="col-md-3 flex justify-left mt-4 ">
-                                    <Select v-model="mtm_tab_1" @change="setManyToManyTableNameByConvention()" name="mtm_tab_1" :options="mtm_tab" optionLabel="name" optionValue="id"  placeholder="Select a table" fluid />
-                                    <Message v-if="errors.mtm_tab_1" severity="error" variant="simple" size="small">{{ errors.mtm_tab_1[0] }}</Message>
+                            <div v-if="many_to_many" class="row w-75 pb-3">
+                                <div class="col-md-6  pb-3">
+                                    <div>
+                                        <Select v-model="table_1"
+                                                @change="setManyToManyTableNameByConvention()"
+                                                name="table_1" :options="table_list" optionLabel="name" optionValue="id"
+                                                placeholder="Select a table" fluid/>
+                                        <Message v-if="errors.table_1" severity="error" variant="simple" size="small">
+                                            {{ errors.table_1[0] }}
+                                        </Message>
+                                    </div>
                                 </div>
-                                <div class="col-md-3 flex justify-left mt-4 ">
-                                    <Select v-model="mtm_tab_2" @change="setManyToManyTableNameByConvention()" name="mtm_tab_2" :options="mtm_tab" optionLabel="name" optionValue="id" placeholder="Select a table" fluid />
-                                    <Message v-if="errors.mtm_tab_2" severity="error" variant="simple" size="small">{{ errors.mtm_tab_2[0] }}</Message>
+                                <div class="col-md-6 pb-3">
+                                    <div>
+                                        <Select v-model="table_2"
+                                                @change="setManyToManyTableNameByConvention()"
+                                                name="table_2" :options="table_list" optionLabel="name" optionValue="id"
+                                                placeholder="Select a table" fluid/>
+                                        <Message v-if="errors.table_2" severity="error" variant="simple" size="small">
+                                            {{ errors.table_2[0] }}
+                                        </Message>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="flex justify-left mt-4 ">
-                                <FloatLabel class="">
-                                    <InputText id="name" v-model="name" :disabled="$route.params.id || many_to_many" aria-describedby="name-help" class="w-75"/>
+                            </div> <!--Tables-->
+                            <div v-if="many_to_many" class="row w-75 pb-3">
+                                <div class="col-md-6 p-3">
+                                    <FloatLabel >
+                                        <InputText id="belongsToMany_1" v-model="belongsToMany_1" class="w-100"/>
+                                        <label for="belongsToMany_1">belongsToMany function name</label>
+                                    </FloatLabel>
+                                    <Message v-if="errors.belongsToMany_1" severity="error" variant="simple" size="small">{{ errors.belongsToMany_1[0] }}</Message>
+                                    <label v-else >public function BelongsToMany</label>
+                                </div>
+                                <div class="col-md-6 p-3">
+                                    <FloatLabel >
+                                        <InputText id="belongsToMany_2" v-model="belongsToMany_2" class="w-100"/>
+                                        <label for="belongsToMany_2">belongsToMany function name</label>
+                                    </FloatLabel>
+                                    <Message v-if="errors.belongsToMany_2" severity="error" variant="simple" size="small">{{ errors.belongsToMany_2[0] }}</Message>
+                                    <label v-else >public function BelongsToMany</label>
+                                </div>
+                            </div> <!--Functions-->
+                            <div class="flex justify-left pb-3">
+                                <FloatLabel >
+                                    <InputText id="name" v-model="name" :disabled="$route.params.id" class="w-75"/>
                                     <label for="name">Name</label>
                                 </FloatLabel>
                                 <Message v-if="errors.name" severity="error" variant="simple" size="small">{{ errors.name[0] }}</Message>
-                                <label v-else >Name for DB migration</label>
-                            </div>
-                            <div v-if="!many_to_many" class="flex justify-left mt-4 ">
-                                <FloatLabel class="">
-                                    <InputText id="label" v-model="label" :disabled="$route.params.id" aria-describedby="label-help" class="w-75"/>
+                                <label v-else >Table name</label>
+                            </div><!--Name-->
+                            <div class="flex justify-left pb-3">
+                                <FloatLabel>
+                                    <InputText id="label" v-model="label" :disabled="$route.params.id"  class="w-75"/>
                                     <label>Label</label>
                                 </FloatLabel>
                                 <Message v-if="errors.label" severity="error" variant="simple" size="small">{{ errors.label[0] }}</Message>
                                 <label v-else >Label for main menu</label>
-                            </div>
-                            <div class="flex justify-left mt-4 ">
-                                <FloatLabel class="">
+                            </div> <!--Label-->
+                            <div class="flex justify-left pb-3">
+                                <FloatLabel >
                                     <Textarea  id="description" v-model="description" rows="5" cols="30" class="w-75"/>
                                     <label>description</label>
                                 </FloatLabel>
                                 <Message v-if="errors.description" severity="error" variant="simple" size="small">{{errors.description[0]}}</Message>
-                            </div>
+                            </div> <!-- Description -->
                             <div v-if="$route.params.id" class="flex p-4">
                                 <ConfirmDialog></ConfirmDialog>
                                 <Toast />
                                 <Button @click="confirmForRemove()" label="Delete Table" severity="danger" outlined></Button>
-                            </div>
-                        </div>
-                        <div class="bg-zinc-200">
-                            <div class="p-4 text-right">
-                                <Button type="submit" >Save</Button>
-                            </div>
+                            </div>  <!-- Remove -->
                         </div>
                     </div>
-                </form>
-            </TabPanel>
-            <TabPanel value="Fields">
-                <Column-list />
-            </TabPanel>
+                </TabPanel>
+                <TabPanel value="Fields">
+                    <Column-list />
+                </TabPanel>
+            </TabPanels>
+        </Tabs>
 
-        </TabPanels>
-    </Tabs>
+        <div class="bg-zinc-200">
+            <div class="p-3 text-right">
+                <Button type="button" @click="save" id="saveAndGenerate" class="ms-3">Save & Generate</Button>
+                <Button type="button" @click="save" id="save" class="ms-3">Save</Button>
+            </div>
+        </div>
+    </div>
+
+
 
 
 </template>
@@ -156,19 +192,30 @@ export default {
             many_to_many: false,
             table_id: null,
 
-            mtm_tab: null,
-            mtm_tab_1: null,
-            mtm_tab_2: null,
+            table_list: null,
+            table_1: null,
+            table_2: null,
+            column_list_1: null,
+            column_list_2: null,
+            belongsToMany_1: null,
+            belongsToMany_2: null,
         }
     },
     mounted() {
-
+        this.getTablesList()
     },
     watch: {
         '$route.path': {
             handler: 'getTable',
-            immediate: true // Запустить getTable при зменении id pTable
-        }
+            immediate: true // Запустить getTable при изменении id pTable
+        },
+        table_1(newValue, oldValue) {
+            this.belongsToMany_2 = this.getTableNameById(newValue)
+        },
+         table_2(newValue, oldValue) {
+            this.belongsToMany_1 = this.getTableNameById(newValue)
+        },
+
     },
     methods:{
         getTable(){
@@ -190,14 +237,30 @@ export default {
             }
         },
         getTablesList(){
-            axios.get('/api/dbd/v1/tables/data-tables-list/23')
+            axios.get('/api/dbd/v1/tables/table-list/'+localStorage.getItem('project'))
                 .then(r => {
                     if(r.data){
-                        this.mtm_tab = r.data.tables
+                        this.table_list = r.data.tables
                     }
                 })
         },
-        save(){
+        getColumnList(column_list, table_var, column_var){
+            axios.get('/api/dbd/v1/tables/column-list/'+this[table_var])
+                .then(r => {
+                    if(r.data){
+                        console.log("--------------------------------")//column_list_1
+                        console.log(column_list)//column_list_1
+                        this[column_list] = r.data
+                        var len = this[column_list].length;
+                        for (var i = 0; i < len; i++) {
+                            if(this[column_list][i]["name"] == "id"){
+                                this[column_var] = this[column_list][i]["id"];
+                            }
+                        }
+                    }
+                })
+        },
+        save(e){
             let method;
             let url;
             if(this.$route.params.id) {//Редактировать таблицу
@@ -216,20 +279,16 @@ export default {
                     .then(response => {
                         this.name = response.data;
                         /*-----------------------------------------------*/
-                        this.saveAxios(method, url)
+                        this.saveAxios(method, url, e.target.id)
                         /*-----------------------------------------------*/
                     })
                     .catch(error => {
-
                     })
             }else{
                 this.saveAxios(method, url)
             }
-
-
-
         },
-        saveAxios(method, url){
+        saveAxios(method, url, eTargetId){
             axios({
                 method: method,
                 url: url,
@@ -238,8 +297,12 @@ export default {
                     label: this.label,
                     description: this.description,
                     columns: this.selectedColumns,
-                    mtm_tab_1: this.mtm_tab_1,
-                    mtm_tab_2: this.mtm_tab_2,
+                    table_1: this.table_1,
+                    table_2: this.table_2,
+                    /*column_1: this.column_1,
+                    column_2: this.column_2,*/
+                    belongsToMany_1: this.belongsToMany_1,
+                    belongsToMany_2: this.belongsToMany_2,
                 },
             })
                 .then(res => {
@@ -249,7 +312,10 @@ export default {
                         this.$store.commit('updateMenu')
                         this.table_id = res.data
                         //Запрос на генерацию
-                        this.codeGen(res.data)
+                        if(eTargetId == 'saveAndGenerate'){
+                            this.codeGen(this.table_id)
+                        }
+
                         this.$router.push({path: '/adminpanel/table/'+res.data})
                         this.errors = {}; // Очистка ошибок
                         this.name = "";
@@ -311,6 +377,9 @@ export default {
             this.name = "";
             this.label = "";
             this.description = "";
+            this.table_1 = null;
+            this.table_2 = null;
+
             if(id == 'many_to_many' & checked == true){
                 this.selectedColumns = ['Many to many'];
                 this.many_to_many = true
@@ -328,8 +397,8 @@ export default {
         setManyToManyTableNameByConvention(){
             axios.post('/api/dbd/v1/getManyToManyTableNameByConvention',
                 {
-                    mtm_tab_1: this.getNameById(this.mtm_tab_1),
-                    mtm_tab_2: this.getNameById(this.mtm_tab_2),
+                    table_1: this.getTableNameById(this.table_1),
+                    table_2: this.getTableNameById(this.table_2),
                 })
                 .then(response => {
                     this.name = response.data;
@@ -339,11 +408,11 @@ export default {
                 })
             this.label = "many_to_many";
         },
-        getNameById(id){
-            var len = this.mtm_tab.length;
+        getTableNameById(id){
+            var len = this.table_list.length;
             for (var i = 0; i < len; i++) {
-                if(this.mtm_tab[i].id == id){
-                    return this.mtm_tab[i].name;
+                if(this.table_list[i].id == id){
+                    return this.table_list[i].name;
                 }
 
             }

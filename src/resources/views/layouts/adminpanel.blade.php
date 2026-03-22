@@ -15,7 +15,7 @@
     'pakages/alexmes/adminpanel/src/public/js/app.js'
     ])
     {{--<script type="module" src="/vendor/adminpanel/js/app.js"></script>--}}
-    <title>Pakage - dbDasher</title>
+    <title>ABC Dashboard</title>
 </head>
 <body>
     <div id="app">

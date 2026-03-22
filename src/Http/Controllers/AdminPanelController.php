@@ -12,19 +12,23 @@ class AdminPanelController extends Controller
     }
 
     public function codegen(Request $request){
-        foreach ($this->getCode($request->table_id) as $key => $value) {
+        $codeArr = $this->getCode($request->table_id);
+
+        foreach ($codeArr as $key => $value) {
             foreach ($value as $key2 => $value2) {
+                //dd(base_path().$value2["path"]);
                 if (!file_exists(base_path().$value2["path"])) {
                     mkdir(base_path().$value2["path"], 0777, true);
                 }
                 file_put_contents(base_path().$value2["path"].$value2["file_name"], $value2["code"]);
             }
         }
+        dd($codeArr);
         $command = 'php '.base_path().'/artisan migrate';
         $output = null;
         $return_var = null;
         exec($command, $output, $return_var);
-        dd($command, $output, $return_var);
+        //dd($command, $output, $return_var);
         //FAIL
 
         //return $this->getCode($request->table_id);

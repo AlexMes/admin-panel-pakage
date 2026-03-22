@@ -24,16 +24,11 @@ import Fieldset from 'primevue/fieldset';
     <form class="mt-4">
         <div class="card">
             <div class="bg-white flex justify-center">
+<!--                <div class="row pt-4 ms-2 me-2">-->
                 <div class="row pt-4 ms-2 me-2">
-                    <div class="col-6">
+<!--                    <div class="col-6">-->
+                    <div class="col-md-6">
                         <Fieldset legend="Migration"  :toggleable="true" class="mb-3">
-                            <div class="p-3">
-                                <FloatLabel class="">
-                                    <InputText id="name" v-model="name" :disabled="$route.params.id" aria-describedby="name-help" class="w-100"/>
-                                    <label for="name">Name</label>
-                                </FloatLabel>
-                                <Message v-if="errors.name" severity="error" variant="simple" size="small">{{ errors.name[0] }}</Message>
-                            </div>
                             <div class="p-3">
                                 <FloatLabel>
                                     <div class="card flex justify-center">
@@ -47,16 +42,45 @@ import Fieldset from 'primevue/fieldset';
                                 </FloatLabel>
                                 <Message v-if="errors.type_id" severity="error" variant="simple" size="small">{{ errors.type_id[0] }}</Message>
                                 <label v-else >{{ type_description }}</label>
-                            </div>
-                            <div  v-if="foreign_key" class="p-3">
-                                <FloatLabel>
-                                    <div class="card flex justify-center">
-                                        <Select @change="setName()" v-model="foreign_key_table_id" :options="table_list" :disabled="$route.params.id" optionLabel="name" optionValue="id" class="md:w-56" />
+                            </div><!--Type-->
+                            <div class="row">
+                                <div class="col-6">
+                                    <div  v-if="foreign_key" class="p-3">
+                                        <FloatLabel>
+                                            <div class="card flex justify-center">
+                                                <Select @change="getColumnList(this.foreign_key_table_id)" v-model="foreign_key_table_id" :options="table_list" :disabled="$route.params.id" optionLabel="name" optionValue="id" class="md:w-56" />
+                                            </div>
+                                            <label for="type">Select a table</label>
+                                        </FloatLabel>
+                                        <Message v-if="errors.foreign_key_table_id" severity="error" variant="simple" size="small">{{ errors.foreign_key_table_id[0] }}</Message>
                                     </div>
-                                    <label for="type">Select a table</label>
-                                </FloatLabel>
-                                <Message v-if="errors.foreign_key_table_id" severity="error" variant="simple" size="small">{{ errors.foreign_key_table_id[0] }}</Message>
+                                </div>
+                                <div class="col-6">
+                                    <div  v-if="foreign_key" class="p-3">
+                                        <FloatLabel>
+                                            <div class="card flex justify-center">
+                                                <Select @change="setForeignKeyValues()" v-model="foreign_key_column_id" :options="column_list" :disabled="$route.params.id" optionLabel="name" optionValue="id" class="md:w-56" />
+                                            </div>
+                                            <label for="type">Select a column</label>
+                                        </FloatLabel>
+                                        <Message v-if="errors.foreign_key_column_id" severity="error" variant="simple" size="small">{{ errors.foreign_key_column_id[0] }}</Message>
+                                    </div>
+                                </div><!--Select a column-->
                             </div>
+                            <div class="p-3">
+                                <FloatLabel >
+                                    <InputText @change="setValues()" id="name" v-model="name" :disabled="$route.params.id" aria-describedby="name-help" class="w-100"/>
+                                    <label for="name">Name</label>
+                                </FloatLabel>
+                                <Message v-if="errors.name" severity="error" variant="simple" size="small">{{ errors.name[0] }}</Message>
+                            </div><!--Name-->
+                            <div class="p-3">
+                                <FloatLabel >
+                                    <InputText id="default" v-model="default_val" class="w-100"/>
+                                    <label for="default">Default value</label>
+                                </FloatLabel>
+                                <Message v-if="errors.default" severity="error" variant="simple" size="small">{{ errors.default[0] }}</Message>
+                            </div><!--Default value-->
                             <div  v-if="param_1_show" class="p-3">
                                 <div class="row">
                                     <div class="col-6">
@@ -82,7 +106,7 @@ import Fieldset from 'primevue/fieldset';
                                 </div>
                             </div>
                             <div class="flex p-3 row">
-                                <div class="col-6">
+                                <div class="col-5">
                                     <div class="mb-3">
                                         <Checkbox  v-model="modifier" inputId="nullable" name="nullable" value="nullable" />
                                         <label for="nullable" class="ms-2"> nullable </label>
@@ -96,7 +120,7 @@ import Fieldset from 'primevue/fieldset';
                                         <label for="unsigned" class="ms-2"> unsigned </label>
                                     </div>
                                 </div>
-                                <div class="col-6">
+                                <div class="col-7">
                                     <div class="mb-3">
                                         <Checkbox  v-model="modifier" inputId="useCurrent" name="useCurrent" value="useCurrent" />
                                         <label for="useCurrent" class="ms-2"> useCurrent </label>
@@ -105,17 +129,12 @@ import Fieldset from 'primevue/fieldset';
                                         <Checkbox  v-model="modifier" inputId="useCurrentOnUpdate" name="useCurrentOnUpdate" value="useCurrentOnUpdate" />
                                         <label for="useCurrentOnUpdate" class="ms-2"> useCurrentOnUpdate </label>
                                     </div>
-                                    <FloatLabel class="mt-5">
-                                        <InputText id="default" v-model="default_val" class="w-100"/>
-                                        <label for="default">Default value</label>
-                                    </FloatLabel>
-                                    <Message v-if="errors.default" severity="error" variant="simple" size="small">{{ errors.default[0] }}</Message>
                                 </div>
                             </div>
                         </Fieldset>
                         <Fieldset legend="Frontend"  :toggleable="true" class="mb-3">
                             <div class="p-3">
-                                <FloatLabel class="">
+                                <FloatLabel >
                                     <InputText id="label" v-model="label" class="w-100"/>
                                     <label for="label">Label</label>
                                 </FloatLabel>
@@ -137,18 +156,19 @@ import Fieldset from 'primevue/fieldset';
                             </div>
                         </Fieldset>
                     </div>
-                    <div class="col-6">
+<!--                    <div class="col-6">-->
+                    <div class="col-md-6">
                         <Fieldset legend="Model"  :toggleable="true" class="mb-3">
                             <div class="mb-3 ps-3">
-                                <Checkbox  v-model="fillable" inputId="fillable" name="fillable" value="fillable" />
+                                <Checkbox  v-model="fillable" inputId="fillable" name="fillable" value="fillable" :binary="true"/>
                                 <label for="fillable" class="ms-2"> $fillable - The attributes that are mass assignable.</label>
                             </div>
                             <div class="mb-3 ps-3">
-                                <Checkbox  v-model="hidden" inputId="hidden" name="hidden" value="hidden" />
+                                <Checkbox  v-model="hidden" inputId="hidden" name="hidden" value="hidden" :binary="true"/>
                                 <label for="hidden" class="ms-2"> $hidden - The attributes that should be hidden for serialization.</label>
                             </div>
                             <div class="p-3">
-                                <FloatLabel class="">
+                                <FloatLabel >
                                     <InputText id="casts" v-model="casts" class="w-100"/>
                                     <label for="casts">casts():</label>
                                 </FloatLabel>
@@ -158,7 +178,7 @@ import Fieldset from 'primevue/fieldset';
 
                             <div  v-if="foreign_key">
                                 <div class="p-3">
-                                    <FloatLabel class="">
+                                    <FloatLabel >
                                         <InputText id="hasOneName" v-model="hasOneName" class="w-100"/>
                                         <label for="hasOneName">hasOne function name</label>
                                     </FloatLabel>
@@ -166,7 +186,7 @@ import Fieldset from 'primevue/fieldset';
                                     <label v-else >public function {{ hasOneName }}(): hasOne</label>
                                 </div>
                                 <div class="p-3">
-                                    <FloatLabel class="">
+                                    <FloatLabel >
                                         <InputText id="hasManyName" v-model="hasManyName" class="w-100"/>
                                         <label for="hasManyName">hasMany function name</label>
                                     </FloatLabel>
@@ -179,7 +199,7 @@ import Fieldset from 'primevue/fieldset';
                         </Fieldset>
                         <Fieldset legend="Other"  :toggleable="true" class="mb-3">
                             <div class="p-3">
-                                <FloatLabel class="">
+                                <FloatLabel >
                                     <InputText id="validation" v-model="validation" aria-describedby="name-help" class="w-100"/>
                                     <label for="validation">Validation</label>
                                 </FloatLabel>
@@ -188,17 +208,13 @@ import Fieldset from 'primevue/fieldset';
                             </div>
                         </Fieldset>
                     </div>
-
                 </div>
-
-
             </div>
             <div class="bg-zinc-200">
                 <div class="p-3 text-right">
                     <Button type="button" @click="save" id="saveAndGenerate" class="ms-3">Save & Generate</Button>
                     <Button type="button" @click="save" id="save" class="ms-3">Save</Button>
                 </div>
-
             </div>
         </div>
     </form>
@@ -213,12 +229,13 @@ export default {
     data(){
         return{
             table_id: null,
+            table_name: null,
             name: null,
             label: null,
             modifier: null,
             default_val: null,
-            fillable: null,
-            hidden: null,
+            fillable: true,
+            hidden: false,
             casts: null,
             description: null,
             status: null,
@@ -241,6 +258,7 @@ export default {
             hasManyName: null,
 
             foreign_key_table_id: null,
+            foreign_key_column_id: null,
             param_1_show: null,
             param_1_name: null,
             param_1_description: null,
@@ -249,9 +267,10 @@ export default {
             param_2_name: null,
             param_2_description: null,
             param_2: null,
-            enum_show: null,
-            enum: null,
+            /*enum_show: null,
+            enum: null,*/
             table_list: [],
+            column_list: [],
 
             column_type: null,
 
@@ -262,6 +281,9 @@ export default {
         this.getComponents()
         this.getColumn()
         this.getTableList()
+    },
+    watch: {
+
     },
     methods:{
         getTypes(){
@@ -295,6 +317,7 @@ export default {
                 })
         },
 
+        //edit column
         getColumn(){
             if(this.$route.params.id){
                 axios.get('/api/dbd/v1/column/'+this.$route.params.id)
@@ -335,27 +358,31 @@ export default {
                 url: url,
                 data: {
                     name: this.name,
+                    label: this.label,
                     description: this.description,
                     table_id: this.$route.params.table_id,
                     type_id: this.type_id,
                     param_1: this.param_1,
                     param_2: this.param_2,
                     foreign_key_table_id: this.foreign_key_table_id,
-                    foreign_key_table_name: this.getName(this.foreign_key_table_id),
+                    foreign_key_table_name: this.getTableName(this.foreign_key_table_id),
+                    local_key: this.foreign_key_column_id,
+                    local_key_name: this.getColunmName(this.foreign_key_column_id),
+                    hasOneName: this.hasOneName,
+                    hasManyName: this.hasManyName,
+
                     validation: this.validation,
                     component_id: this.component_id,
-                    label: this.label,
+
                     modifier: this.modifier,
                     default_val: this.default_val,
                     fillable: this.fillable,
                     hidden: this.hidden,
                     casts: this.casts,
-                    hasOneName: this.hasOneName,
-                    hasManyName: this.hasManyName,
                 },
             })
             .then(res => {
-                console.log(res.data);
+                this.$store.commit('updateMenu')
                 if (res.response && res.response.status === 422) {// Обработка ошибки 422 (валидации)
                     this.errors = res.response.data.errors
                 }else{
@@ -380,25 +407,15 @@ export default {
 
         },
 
-        getTableList(){
-            axios.get('/api/dbd/v1/tables/data-tables-list/23')
-                .then(r => {
-                    if(r.data){
-                        this.table_list = r.data.tables
-                        var len = this.table_list.length;
-                        for (var i = 0; i < len; i++) {
-                            if(this.table_list[i].id == this.$route.params.table_id){
-                                this.table_list.splice(i++, 1)
-                            }
-                        }
-                    }
-                })
-        },
         columnTypeCheck(){
             this.column_type = this.getType(this.type_id);
-
             this.param_1_show = false;
             this.param_2_show = false;
+            this.foreign_key_table_id = null;
+            this.foreign_key_column_id = null;
+            this.hasOneName = null;
+            this.hasManyName = null;
+            this.validation = null;
             this.foreign_key = false;//Show select table
 
             this.type_description = this.column_type.description;
@@ -415,8 +432,6 @@ export default {
                 this.param_2_name = this.column_type.param_2.name;
                 this.param_2_description = this.column_type.param_2.description;
             }
-
-
             switch (this.type_id) {//Show select table
                 case "foreignKey":
                 case "foreignId":
@@ -426,19 +441,110 @@ export default {
                 case "morphs":
                 case "nullableMorphs":
                     this.foreign_key = true;
+                    this.casts = null;
+                    this.name = null;
+                    this.validation = null;
+                    this.setForeignKeyValues();
+                    break;
+                case "enum":
+                case "set":
+                    this.setEnumValues()
                     break;
             }
         },
-        setName(){
-            let foreign_key_table_name = this.getName(this.foreign_key_table_id)
-            if (foreign_key_table_name.endsWith('s')) {
-                foreign_key_table_name = foreign_key_table_name.slice(0, -1);
-            }
-            this.name = foreign_key_table_name+'_id';
-            this.hasOneName= foreign_key_table_name;
-            this.hasManyName= foreign_key_table_name+'s';
+
+        getTableList(){
+            axios.get('/api/dbd/v1/tables/table-list/'+localStorage.getItem('project'))
+                .then(r => {
+                    if(r.data){
+                        this.table_list = r.data.tables
+                        var len = this.table_list.length;
+                        for (var i = 0; i < len; i++) {
+                            if(this.table_list[i].id == this.$route.params.table_id){
+                                this.table_name = this.table_list[i++]["name"];
+                                //this.table_list.splice(i, 1)
+                            }
+                        }
+                    }
+                })
         },
-        getName(id){
+        getColumnList(ForeignKeyTableId){
+            axios.get('/api/dbd/v1/tables/column-list/'+ForeignKeyTableId)
+                .then(r => {
+                    if(r.data){
+                        this.column_list = r.data
+                        var len = this.column_list.length;
+                        for (var i = 0; i < len; i++) {
+                            if(this.column_list[i]["name"] == "id"){
+                                this.foreign_key_column_id = this.column_list[i]["id"];
+                                this.setForeignKeyValues()
+                            }
+                        }
+                    }
+                })
+        },
+
+        setValues(){
+            switch (this.type_id) {
+                case "foreignKey":
+                case "foreignId":
+                case "foreignUlid":
+                case "foreignUuid":
+                case "foreignIdFor":
+                case "morphs":
+                case "nullableMorphs":
+                    this.setForeignKeyFunctionName();
+                    break;
+                case "enum":
+                case "set":
+                    this.setEnumValues()
+                    break;
+            }
+        },
+        setEnumValues() {
+            this.casts = this.ucFirst(this.table_name)+this.ucFirst(this.name)+"Enum::class";
+            this.validation = "'required', 'string', Rule::in(array_column(\\App\\Enums\\"+this.ucFirst(this.table_name)+this.ucFirst(this.name)+"Enum"+"::cases(), 'value'))";
+        },
+        setForeignKeyValues() {
+            this.setForeignKeyName()
+            this.setForeignKeyValidation()
+            //this.setForeignKeyFunctionName()
+        },
+        setForeignKeyValidation(){
+            this.validation = "'required', 'exists:"+this.getTableName(this.foreign_key_table_id)+","+this.getColunmName(this.foreign_key_column_id)+"'";
+        },
+        setForeignKeyName(){
+            let foreign_key_table_name = this.getTableName(this.foreign_key_table_id)
+            let foreign_key_column_id = this.getColunmName(this.foreign_key_column_id)
+            if (foreign_key_table_name != undefined){
+                if (foreign_key_table_name.endsWith('s')) {
+                    foreign_key_table_name = foreign_key_table_name.slice(0, -1)
+                }
+            }
+            this.name = foreign_key_table_name+"_"+foreign_key_column_id
+            this.hasOneName= foreign_key_table_name
+            this.hasManyName= this.table_name
+            this.setForeignKeyFunctionName()
+            /*this.getTableList(this.foreign_key_table_id)
+            this.getColumnList(this.foreign_key_table_id);*/
+        },
+        setForeignKeyFunctionName(){
+            if (this.name != null){
+                this.hasOneName= this.name
+                this.hasManyName= this.name
+                    if (this.name.endsWith('_id')) {
+                        this.hasOneName= this.name.slice(0, -3)
+                        this.hasManyName= this.name.slice(0, -3)
+                    }
+                if(this.hasManyName != null){
+                    this.hasManyName= this.hasManyName+'s'
+                }
+            }
+        },
+
+
+
+        getTableName(id){
             var len = this.table_list.length;
             for (var i = 0; i < len; i++) {
                 if(this.table_list[i].id == id){
@@ -446,6 +552,19 @@ export default {
                 }
 
             }
+        },
+        getColunmName(id){
+            var len = this.column_list.length;
+            for (var i = 0; i < len; i++) {
+                if(this.column_list[i].id == id){
+                    return this.column_list[i].name;
+                }
+
+            }
+        },
+        ucFirst(str) {
+            if (!str) return str; // Проверка на пустую строку или null
+            return str.charAt(0).toUpperCase() + str.slice(1);
         }
 
     }

@@ -9,30 +9,43 @@ import { watch } from 'vue';
         <Login @login="getToken"></Login>
     </div>
     <div v-if="token" class="w-full">
-        <!--    ******************-->
-        <small class="ps-2">Tables</small>
-        <!--    ******************-->
-        <div class="ps-4">
-            <router-link active-class="active-link" class="main-menu-link"
+
+        <nav>
+            <!--    ******************-->
+            <small class="ps-2">Tables</small>
+            <!--    ******************-->
+        <div class="ps-2">
+
+            <router-link active-class="router-link-active" class="main-menu-link"
                          :to="{ path: '/adminpanel/project/'+project.id+'/create/table/' }">
                 <i class="pi pi-plus px-1"></i>
                 New Table
             </router-link>
-            <router-link active-class="active-link" v-for="table in project.tables" class="main-menu-link"
-                         :to="{ path: '/adminpanel/table/' + table.id }">
-                {{ table.name }}
-            </router-link>
-        </div>
-
-        <!--    ******************-->
+<!--            ********************* - org #menu-tab-178 > a -->
+            <div v-for="table in project.tables" class="main-menu-link-div" :id="'menu-tab-' + table.id" @click="setActiveItem('menu-tab-' + table.id)">
+                    <router-link class="main-menu-link"
+                                 :to="{ path: '/adminpanel/table/' + table.id }"
+                                 :key="$route.fullPath"
+                    >
+                        <i v-if="table.status !== 'done'" class="pi pi-circle px-1" style="color: red"></i>
+                        <i v-if="table.status === 'done'" class="pi pi-check-circle px-1" style="color: green"></i>
+                        {{ table.name }}
+                    </router-link>
+            </div>
+<!--    ******************-->
         <small class="ps-2">Settings</small>
         <!--    ******************-->
-        <router-link active-class="active-link" v-if="token" class="main-menu-link" :to="{ name: 'users' }">
+        <router-link active-class="router-link-active" v-if="token" class="main-menu-link" :to="{ name: 'users' }">
+            <i class="pi pi-minus px-1"></i>
+            <i class="pi pi-check px-1" style="color: red"></i>
+            Generate
+        </router-link>
+        <router-link active-class="router-link-active" v-if="token" class="main-menu-link" :to="{ name: 'users' }">
             <i class="pi pi-minus px-1"></i>
             <i class="pi pi-users px-1"></i>
             Developers
         </router-link>
-        <router-link active-class="active-link" v-if="token" class="main-menu-link" :to="{ name: 'user.profile' }">
+        <router-link active-class="router-link-active" v-if="token" class="main-menu-link" :to="{ name: 'user.profile' }">
             <i class="pi pi-minus px-1"></i>
             <i class="pi pi-user px-1"></i>
             Profile
@@ -41,6 +54,9 @@ import { watch } from 'vue';
             <i class="pi pi-sign-out px-1"></i>
             Log Out
         </a>
+
+        </div>
+        </nav>
     </div>
 </template>
 
@@ -88,7 +104,7 @@ export default {
             if(token) {
                 axios.post('/api/dbd/v1/menu',
                     {
-                        project_id: 23
+                        project_id: localStorage.getItem('project')
                     }
                 )
                     .then(response => {
@@ -107,13 +123,24 @@ export default {
             }else{
                 this.showingTablesNavigationDropdown['project_'+project_id] = true;
             }
+        },
+        setActiveItem(id){
+            const element = document.querySelector('.main-menu-link');
+            if (element) {
+                element.classList.remove('router-link-active');
+            }
+            element = document.getElementById(id);
+            if (element) {
+                element.classList.add("router-link-active");
+            }
         }
     }
 }
 </script>
 
 <style>
-.active-link{
+
+.router-link-active{
     background-color: var(--p-button-primary-hover-background);
     color: #ff0000;
 }

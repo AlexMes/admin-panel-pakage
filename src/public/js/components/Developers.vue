@@ -6,10 +6,8 @@ import Toast from "primevue/toast";
 
 <template>
     <div class="card bg-white p-3 p-6 m-6">
-        <h2>
-            Profile
-        </h2>
-        <label>Input base table information.</label>
+        <h2>Users</h2>
+        <label>List of users.</label>
     </div>
     <Toast />
     <div class="card mt-4">
@@ -41,11 +39,9 @@ import Toast from "primevue/toast";
     </div>
 </template>
 
-
-
 <script>
 export default {
-    name: "Profile",
+    name: "Developers",
     data(){
         return{
             name: null
@@ -64,8 +60,6 @@ export default {
     }
 }
 </script>
-
-
 
 <style scoped>
 

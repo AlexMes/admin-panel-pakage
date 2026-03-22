@@ -14,7 +14,7 @@ const routes = [
                 name: 'user.registration'
             },
             {path: 'profile', component: () => import('./components/Profile.vue'), name: 'user.profile'},
-            {path: 'users', component: () => import('./components/Users.vue'), name: 'users'},
+            {path: 'users', component: () => import('./components/Developers.vue'), name: 'users'},
 
             {path: 'create/project', component: () => import('./components/Project.vue'), name: 'project.create'},
             {path: 'project/:id', component: () => import('./components/Project.vue'), name: 'project.edit'},
@@ -25,7 +25,8 @@ const routes = [
                 component: () => import('./components/Table.vue'),
                 name: 'table.create'
             },
-            {path: 'create/field/:table_id', component: () => import('./components/Column.vue'), name: 'field.create'},
+            /*{path: 'create/field/:table_id', component: () => import('./components/Column.vue'), name: 'field.create'},*/
+            {path: 'table/:table_id/create/column', component: () => import('./components/Column.vue'), name: 'field.create'},
             {path: 'field/:id', component: () => import('./components/Column.vue'), name: 'field'},
 
             {
